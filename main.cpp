@@ -160,7 +160,7 @@ const GLchar* geometryShaderSrc = GLSL(
     }
 
     bool notVisible(){
-        return aux.x < -200.0 || aux.x > 200.0 || aux.y < -10.0 || aux.y > 1000.0;// || aux.z < -1.0 || aux.z > 10.0;
+        return false; //aux.x < -200.0 || aux.x > 200.0 || aux.y < -10.0 || aux.y > 1000.0;// || aux.z < -1.0 || aux.z > 10.0;
     }
 
     void main() {
@@ -812,65 +812,11 @@ extern "C" int init() {
     glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 view;
     glm::mat4 projection;
-    model = glm::rotate(model, 10.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+    //model = glm::rotate(model, 10.0f, glm::vec3(0.0f, 0.0f, 1.0f));
     //model = glm::rotate(model, 10.0f, glm::vec3(1.0f, 0.0f, 0.0f));
     //view = glm::translate(view, glm::vec3(0.0f, 1.0f, 0.0f));
     projection = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.1f, 300.0f);
 
-    for (int i = 0; i < 4; ++i)
-    {
-        for (int j = 0; j < 4; ++j)
-        {
-            printf("%f ", model[i][j]);
-        }
-        printf("\n");
-    }
-model = glm::mat4(1.0f);
-    glm::mat4 a1model = glm::rotate(model, 10.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-
-    for (int i = 0; i < 4; ++i)
-    {
-        for (int j = 0; j < 4; ++j)
-        {
-            printf("%f ", model[i][j]);
-        }
-        printf("\n");
-    }
-model = glm::mat4(1.0f);
-    glm::mat4 a2model = glm::rotate(a1model, 10.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-
-    for (int i = 0; i < 4; ++i)
-    {
-        for (int j = 0; j < 4; ++j)
-        {
-            printf("%f ", model[i][j]);
-        }
-        printf("\n");
-    }
-model = glm::mat4(1.0f);
-    glm::mat4 a3model = glm::rotate(a2model, 10.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-
-    for (int i = 0; i < 4; ++i)
-    {
-        for (int j = 0; j < 4; ++j)
-        {
-            printf("%f ", a3model[i][j]);
-        }
-        printf("\n");
-    }
-printf("\n");
-    model = a1model * a2model * a3model;
-
-    for (int i = 0; i < 4; ++i)
-    {
-        for (int j = 0; j < 4; ++j)
-        {
-            printf("%f ", model[i][j]);
-        }
-        printf("\n");
-    }
-
-model = glm::mat4(1.0f);
     // Get their uniform location
     GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
     GLint viewLoc = glGetUniformLocation(shaderProgram, "view");
@@ -932,26 +878,14 @@ model = glm::mat4(1.0f);
     glfwTerminate();
 
     free(points);
-    // Render loop
-    /*
-     while (window.isOpen()) {
-        // Handle events
-        sf::Event ev;
-        while (window.pollEvent(ev)) {
-            if (ev.type == sf::Event::Closed) {
-                window.close();
-                break;
-            }
-        }
 
-        window.display();
-    }
-	*/
     return 0;
 }
 
-#define CITY_SIZE 200
+int CITY_SIZE = 200;
 int main(){
+    printf("Insert city radius (NUMBER_OF_BUILDINGS = (radius*2)^2):\n");
+    scanf("%d",&CITY_SIZE);
 
     //createPoints(5000);
     start(CITY_SIZE*2*CITY_SIZE*2);
