@@ -62,192 +62,7 @@ const GLchar* geometryShaderSrc = GLSL(
     vec4 aux = projection * view * model * gl_in[0].gl_Position;
     const float PI = 3.1415926;
 
-    void makeCube(float size_x,float size_y,float size_z){
-                aux =  gl_in[0].gl_Position;// - vec4(0.0,0.0,0.5,0.0);
-
-                gColor = vec4(0.5,0.2,size_x,1.0);
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, size_y, size_z, 1.0);     //* vec4(cos(vTime[0]),sin(vTime[0]),0,1) // 1
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, size_y, size_z, 1.0);      //* vec4(sin(vTime[0]),cos(vTime[0]),0,1) // 2
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, -size_y, size_z, 1.0);     //* vec4(cos(vTime[0]),sin(vTime[0]),0,1) // 4
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, size_y, size_z, 1.0);     //* vec4(cos(vTime[0]),sin(vTime[0]),0,1) // 1
-                EmitVertex();
-
-                EndPrimitive();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, -size_y, size_z, 1.0);    //* vec4(sin(vTime[0]),cos(vTime[0]),0,1) // 3
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, size_y, size_z, 1.0);     //* vec4(cos(vTime[0]),sin(vTime[0]),0,1) // 1
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, -size_y, size_z, 1.0);     //* vec4(cos(vTime[0]),sin(vTime[0]),0,1) // 4
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, -size_y, size_z, 1.0);    //* vec4(sin(vTime[0]),cos(vTime[0]),0,1) // 3
-                EmitVertex();
-
-                EndPrimitive();
-
-                gColor = vec4(1,1,1,1.0);
-
-                gl_Position = aux + projection * view * model * vec4(size_x, size_y, -size_z, 1.0);      //* vec4(sin(vTime[0]),cos(vTime[0]),0,1) // 6
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, size_y, -size_z, 1.0);     //* vec4(cos(vTime[0]),sin(vTime[0]),0,1) // 5
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, -size_y, -size_z, 1.0);    //* vec4(sin(vTime[0]),cos(vTime[0]),0,1) // 7 
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, size_y, -size_z, 1.0);      //* vec4(sin(vTime[0]),cos(vTime[0]),0,1) // 6
-                EmitVertex();
-                
-                EndPrimitive();
-                
-                gl_Position = aux + projection * view * model * vec4(size_x, -size_y, -size_z, 1.0);     //* vec4(cos(vTime[0]),sin(vTime[0]),0,1) // 8
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, size_y, -size_z, 1.0);      //* vec4(sin(vTime[0]),cos(vTime[0]),0,1) // 6
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, -size_y, -size_z, 1.0);    //* vec4(sin(vTime[0]),cos(vTime[0]),0,1) // 7 
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, -size_y, -size_z, 1.0);     //* vec4(cos(vTime[0]),sin(vTime[0]),0,1) // 8
-                EmitVertex();
-
-                EndPrimitive();
-
-                gColor = vec4(0.4,0.4,1,1.0);
-
-                gl_Position = aux + projection * view * model * vec4(size_x, size_y, -size_z, 1.0) ; //*  vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 6
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, size_y, size_z, 1.0) ; //* vec4(cos(vTime[0]),sin(vTime[0]),0,1);    // 5
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, -size_y, size_z, 1.0); //*vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 7 
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, size_y, -size_z, 1.0) ; //*  vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 6
-                EmitVertex();
-                
-                EndPrimitive();
-                
-                gl_Position = aux + projection * view * model * vec4(size_x, -size_y, size_z, 1.0); //* vec4(cos(vTime[0]),sin(vTime[0]),0,1);    // 8
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, -size_y, -size_z, 1.0); //*  vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 6
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, size_y, -size_z, 1.0) ; //* vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 7 
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, -size_y, size_z, 1.0); //* vec4(cos(vTime[0]),sin(vTime[0]),0,1);    // 8
-                EmitVertex();
-
-                EndPrimitive();
-
-                gColor = vec4(0.6,0.3,0.5,1.0);
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, size_y, -size_z, 1.0) ; //*  vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 6
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, size_y, size_z, 1.0) ; //* vec4(cos(vTime[0]),sin(vTime[0]),0,1);    // 5
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, -size_y, size_z, 1.0); //*vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 7 
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, size_y, -size_z, 1.0) ; //*  vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 6
-                EmitVertex();
-                
-                EndPrimitive();
-                
-                gl_Position = aux + projection * view * model * vec4(-size_x, -size_y, size_z, 1.0); //* vec4(cos(vTime[0]),sin(vTime[0]),0,1);    // 8
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, -size_y, -size_z, 1.0); //*  vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 6
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, size_y, -size_z, 1.0) ; //* vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 7 
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, -size_y, size_z, 1.0); //* vec4(cos(vTime[0]),sin(vTime[0]),0,1);    // 8
-                EmitVertex();
-
-                EndPrimitive();
-
-
-                gColor = vec4(0.1,0.1,0.1,1.0);
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, size_y, -size_z, 1.0) ; //*  vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 6
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, size_y, size_z, 1.0) ; //* vec4(cos(vTime[0]),sin(vTime[0]),0,1);    // 5
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, size_y, size_z, 1.0); //*vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 7 
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, size_y, -size_z, 1.0) ; //*  vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 6
-                EmitVertex();
-                
-                EndPrimitive();
-                
-                gl_Position = aux + projection * view * model * vec4(size_x, size_y, size_z, 1.0); //* vec4(cos(vTime[0]),sin(vTime[0]),0,1);    // 8
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, size_y, -size_z, 1.0); //*  vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 6
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, size_y, -size_z, 1.0) ; //* vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 7 
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, size_y, size_z, 1.0); //* vec4(cos(vTime[0]),sin(vTime[0]),0,1);    // 8
-                EmitVertex();
-
-                EndPrimitive();
-
-
-                gColor = vec4(0.1,0.4,0.1,1.0);
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, -size_y, -size_z, 1.0) ; //*  vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 6
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, -size_y, size_z, 1.0) ; //* vec4(cos(vTime[0]),sin(vTime[0]),0,1);    // 5
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, -size_y, size_z, 1.0); //*vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 7 
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, -size_y, -size_z, 1.0) ; //*  vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 6
-                EmitVertex();
-                
-                EndPrimitive();
-                
-                gl_Position = aux + projection * view * model * vec4(size_x, -size_y, size_z, 1.0); //* vec4(cos(vTime[0]),sin(vTime[0]),0,1);    // 8
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, -size_y, -size_z, 1.0); //*  vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 6
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, -size_y, -size_z, 1.0) ; //* vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 7 
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, -size_y, size_z, 1.0); //* vec4(cos(vTime[0]),sin(vTime[0]),0,1);    // 8
-                EmitVertex();
-
-                EndPrimitive();
-    }
-
+   
     void makeCyl(float width, float l,float h, int sides){
                 // Safe, GLfloats can represent small integers exactly
                 for (int i = 0; i <= sides; i++) {
@@ -390,7 +205,8 @@ const GLchar* geometryShaderSrc2 = GLSL(
     layout(points) in;
     layout(line_strip, max_vertices = 420) out;
   
-     uniform mat4 view;
+  
+    uniform mat4 view;
     uniform mat4 projection;
     uniform mat4 model;
     uniform vec3 cameraPos;
@@ -405,192 +221,7 @@ const GLchar* geometryShaderSrc2 = GLSL(
     vec4 aux = projection * view * model * gl_in[0].gl_Position;
     const float PI = 3.1415926;
 
-    void makeCube(float size_x,float size_y,float size_z){
-                aux =  gl_in[0].gl_Position;// - vec4(0.0,0.0,0.5,0.0);
-
-                gColor = vec4(0.5,0.2,size_x,1.0);
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, size_y, size_z, 1.0);     //* vec4(cos(vTime[0]),sin(vTime[0]),0,1) // 1
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, size_y, size_z, 1.0);      //* vec4(sin(vTime[0]),cos(vTime[0]),0,1) // 2
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, -size_y, size_z, 1.0);     //* vec4(cos(vTime[0]),sin(vTime[0]),0,1) // 4
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, size_y, size_z, 1.0);     //* vec4(cos(vTime[0]),sin(vTime[0]),0,1) // 1
-                EmitVertex();
-
-                EndPrimitive();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, -size_y, size_z, 1.0);    //* vec4(sin(vTime[0]),cos(vTime[0]),0,1) // 3
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, size_y, size_z, 1.0);     //* vec4(cos(vTime[0]),sin(vTime[0]),0,1) // 1
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, -size_y, size_z, 1.0);     //* vec4(cos(vTime[0]),sin(vTime[0]),0,1) // 4
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, -size_y, size_z, 1.0);    //* vec4(sin(vTime[0]),cos(vTime[0]),0,1) // 3
-                EmitVertex();
-
-                EndPrimitive();
-
-                gColor = vec4(1,1,1,1.0);
-
-                gl_Position = aux + projection * view * model * vec4(size_x, size_y, -size_z, 1.0);      //* vec4(sin(vTime[0]),cos(vTime[0]),0,1) // 6
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, size_y, -size_z, 1.0);     //* vec4(cos(vTime[0]),sin(vTime[0]),0,1) // 5
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, -size_y, -size_z, 1.0);    //* vec4(sin(vTime[0]),cos(vTime[0]),0,1) // 7 
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, size_y, -size_z, 1.0);      //* vec4(sin(vTime[0]),cos(vTime[0]),0,1) // 6
-                EmitVertex();
-                
-                EndPrimitive();
-                
-                gl_Position = aux + projection * view * model * vec4(size_x, -size_y, -size_z, 1.0);     //* vec4(cos(vTime[0]),sin(vTime[0]),0,1) // 8
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, size_y, -size_z, 1.0);      //* vec4(sin(vTime[0]),cos(vTime[0]),0,1) // 6
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, -size_y, -size_z, 1.0);    //* vec4(sin(vTime[0]),cos(vTime[0]),0,1) // 7 
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, -size_y, -size_z, 1.0);     //* vec4(cos(vTime[0]),sin(vTime[0]),0,1) // 8
-                EmitVertex();
-
-                EndPrimitive();
-
-                gColor = vec4(0.4,0.4,1,1.0);
-
-                gl_Position = aux + projection * view * model * vec4(size_x, size_y, -size_z, 1.0) ; //*  vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 6
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, size_y, size_z, 1.0) ; //* vec4(cos(vTime[0]),sin(vTime[0]),0,1);    // 5
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, -size_y, size_z, 1.0); //*vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 7 
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, size_y, -size_z, 1.0) ; //*  vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 6
-                EmitVertex();
-                
-                EndPrimitive();
-                
-                gl_Position = aux + projection * view * model * vec4(size_x, -size_y, size_z, 1.0); //* vec4(cos(vTime[0]),sin(vTime[0]),0,1);    // 8
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, -size_y, -size_z, 1.0); //*  vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 6
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, size_y, -size_z, 1.0) ; //* vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 7 
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, -size_y, size_z, 1.0); //* vec4(cos(vTime[0]),sin(vTime[0]),0,1);    // 8
-                EmitVertex();
-
-                EndPrimitive();
-
-                gColor = vec4(0.6,0.3,0.5,1.0);
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, size_y, -size_z, 1.0) ; //*  vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 6
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, size_y, size_z, 1.0) ; //* vec4(cos(vTime[0]),sin(vTime[0]),0,1);    // 5
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, -size_y, size_z, 1.0); //*vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 7 
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, size_y, -size_z, 1.0) ; //*  vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 6
-                EmitVertex();
-                
-                EndPrimitive();
-                
-                gl_Position = aux + projection * view * model * vec4(-size_x, -size_y, size_z, 1.0); //* vec4(cos(vTime[0]),sin(vTime[0]),0,1);    // 8
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, -size_y, -size_z, 1.0); //*  vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 6
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, size_y, -size_z, 1.0) ; //* vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 7 
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, -size_y, size_z, 1.0); //* vec4(cos(vTime[0]),sin(vTime[0]),0,1);    // 8
-                EmitVertex();
-
-                EndPrimitive();
-
-
-                gColor = vec4(0.1,0.1,0.1,1.0);
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, size_y, -size_z, 1.0) ; //*  vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 6
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, size_y, size_z, 1.0) ; //* vec4(cos(vTime[0]),sin(vTime[0]),0,1);    // 5
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, size_y, size_z, 1.0); //*vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 7 
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, size_y, -size_z, 1.0) ; //*  vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 6
-                EmitVertex();
-                
-                EndPrimitive();
-                
-                gl_Position = aux + projection * view * model * vec4(size_x, size_y, size_z, 1.0); //* vec4(cos(vTime[0]),sin(vTime[0]),0,1);    // 8
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, size_y, -size_z, 1.0); //*  vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 6
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, size_y, -size_z, 1.0) ; //* vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 7 
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, size_y, size_z, 1.0); //* vec4(cos(vTime[0]),sin(vTime[0]),0,1);    // 8
-                EmitVertex();
-
-                EndPrimitive();
-
-
-                gColor = vec4(0.1,0.4,0.1,1.0);
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, -size_y, -size_z, 1.0) ; //*  vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 6
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, -size_y, size_z, 1.0) ; //* vec4(cos(vTime[0]),sin(vTime[0]),0,1);    // 5
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, -size_y, size_z, 1.0); //*vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 7 
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, -size_y, -size_z, 1.0) ; //*  vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 6
-                EmitVertex();
-                
-                EndPrimitive();
-                
-                gl_Position = aux + projection * view * model * vec4(size_x, -size_y, size_z, 1.0); //* vec4(cos(vTime[0]),sin(vTime[0]),0,1);    // 8
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, -size_y, -size_z, 1.0); //*  vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 6
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(-size_x, -size_y, -size_z, 1.0) ; //* vec4(sin(vTime[0]),cos(vTime[0]),0,1);    // 7 
-                EmitVertex();
-
-                gl_Position = aux + projection * view * model * vec4(size_x, -size_y, size_z, 1.0); //* vec4(cos(vTime[0]),sin(vTime[0]),0,1);    // 8
-                EmitVertex();
-
-                EndPrimitive();
-    }
-
+   
     void makeCyl(float width, float l,float h, int sides){
                 // Safe, GLfloats can represent small integers exactly
                 for (int i = 0; i <= sides; i++) {
@@ -602,7 +233,7 @@ const GLchar* geometryShaderSrc2 = GLSL(
                     //    gl_Position = aux * projection * view * model;
                     //    EmitVertex();
                     
-                    gColor = vec4(i/sides,ang/10,0.1,1.0);
+                    gColor = vec4(ang/15,ang/15,ang/15,1.0);
                     
                     // Offset from center of point (0.3 to accomodate for aspect ratio)
                     vec4 offset = projection * view * model * vec4(cos(ang) * width, -sin(ang) * l, -h, 0.0);
@@ -625,7 +256,7 @@ const GLchar* geometryShaderSrc2 = GLSL(
                         gl_Position = aux + projection * view * model * vec4(0.0f,0.0f,-h,0.0f);
                         EmitVertex();
 
-                    gColor = vec4(ang/7,ang/10,0.1,1.0);
+                    gColor = vec4(ang/7,ang/7,ang/7,1.0);
                     // Offset from center of point (0.3 to accomodate for aspect ratio)
                     vec4 offset = projection * view * model * vec4(cos(ang) * width, -sin(ang) * l, -h, 0.0);
                     gl_Position = aux + offset;
@@ -641,7 +272,7 @@ const GLchar* geometryShaderSrc2 = GLSL(
                         gl_Position = aux + projection * view * model * vec4(0.0f,0.0f,h,0.0f);
                         EmitVertex();
 
-                    gColor = vec4(ang/7,0.1,ang/10,1.0);
+                    gColor = vec4(ang/12,ang/12,ang/12,1.0);
                     // Offset from center of point (0.3 to accomodate for aspect ratio)
                     vec4 offset = projection * view * model * vec4(cos(ang) * width, -sin(ang) * l, h, 0.0);
                     gl_Position = aux + offset;
@@ -679,41 +310,50 @@ const GLchar* geometryShaderSrc2 = GLSL(
     }
 
     int calcSides(int sides){
-        if(distance(aux,vec4(cameraPos,1.0)) > 100){
-             return 3;
-        }else if(distance(aux,vec4(cameraPos,1.0)) > 50){
-             return 4;
+        float dist = distance(aux,vec4(cameraPos,1.0));
+        if(dist > 1){
+             return  int(min(32,max(4.0,sides/(dist*0.1))));
         }
         return sides;
 
     }
 
+    bool notVisible(){
+        return aux.x < -200.0 || aux.x > 200.0 || aux.y < -10.0 || aux.y > 1000.0;// || aux.z < -1.0 || aux.z > 10.0;
+    }
+
     void main() {
+
+        if(notVisible()){
+//            EndPrimitive();
+        }
+        else{
             gColor = vec4(0.1,0.67,0.3,1.0);
-        switch (vType[0]){
+            switch (vType[0]){
 
-            case 1:
-                makeCyl(vSize[0].x,vSize[0].y,vSize[0].z,4);            
-            break;
-            
-            case 2:
-                makeSphere(vSize[0].x,20);
-            break;
+                case 1:
+                    makeCyl(vSize[0].x,vSize[0].y,vSize[0].z,4);            
+                break;
+                
+                case 2:
+                    makeSphere(vSize[0].x,16);
+                break;
 
-            case 3:
-                makeCyl(vSize[0].x,vSize[0].y,vSize[0].z,calcSides(int(vSides[0])));
-            break;
+                case 3:
+                    makeCyl(vSize[0].x,vSize[0].y,vSize[0].z,calcSides(int(vSides[0])));
+                break;
 
-            default:
-                gl_Position = aux + projection * view * model * vec4(0.1, -0.1, 0.0, 0.0);
-                EmitVertex();
+                default:
+                    gl_Position = aux + projection * view * model * vec4(0.1, -0.1, 0.0, 0.0);
+                    EmitVertex();
 
-                gl_Position = aux + projection * view * model * vec4(-0.1, -0.1, 0.0, 0.0);
-                EmitVertex();
+                    gl_Position = aux + projection * view * model * vec4(-0.1, -0.1, 0.0, 0.0);
+                    EmitVertex();
 
-                gl_Position = aux + projection * view * model * vec4(-0.1, 0.1, 0.0, 0.0);
-                EmitVertex();
-                EndPrimitive();
+                    gl_Position = aux + projection * view * model * vec4(-0.1, 0.1, 0.0, 0.0);
+                    EmitVertex();
+                    EndPrimitive();
+            }
         }
 
     }
