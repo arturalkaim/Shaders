@@ -882,7 +882,7 @@ extern "C" int init() {
     return 0;
 }
 
-int CITY_SIZE = 200;
+int CITY_SIZE = 10;
 int main(){
     printf("A - S - W - D to move R - F or scrol for camera height\n");
     printf("Insert city radius (NUMBER_OF_BUILDINGS = (radius*2)^2):\n");
