@@ -868,7 +868,7 @@ extern "C" int init() {
         glDrawArrays(GL_POINTS, 0, N_POINTS);
 
         glfwSwapBuffers(window);
-        showFPS();
+        //showFPS();
         //usleep(10);
 
     }
@@ -884,6 +884,7 @@ extern "C" int init() {
 
 int CITY_SIZE = 200;
 int main(){
+    printf("A - S - W - D to move R - F or scrol for camera height\n");
     printf("Insert city radius (NUMBER_OF_BUILDINGS = (radius*2)^2):\n");
     scanf("%d",&CITY_SIZE);
 
