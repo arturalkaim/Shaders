@@ -18,6 +18,7 @@ extern void shaderAttachFromFile(GLuint, GLenum, const char *);
 // Vertex shader + vec4(sin(time)/1,cos(time)/1,0,1);
 const GLchar* vertexShaderSrc = GLSL(
     in vec3 pos;
+    in mat4 transformatrix;
     in float type;
     in float sides;
     in vec3 size;
@@ -64,19 +65,12 @@ const GLchar* geometryShaderSrc = GLSL(
 
    
     void makeCyl(float width, float l,float h, int sides){
-                // Safe, GLfloats can represent small integers exactly
                 for (int i = 0; i <= sides; i++) {
-                    // Angle between each side in radians
                     float ang = ((PI * 2.0) / sides * i) + (PI / 4);
-                    //float ang = (PI * 2.0) / vSides[0] * i;
-                    //ang -= vTime[0];
-                    //if(i%2==0)
-                    //    gl_Position = aux * projection * view * model;
-                    //    EmitVertex();
+
                     
                     gColor = vec4(ang/15,ang/15,ang/15,1.0);
                     
-                    // Offset from center of point (0.3 to accomodate for aspect ratio)
                     vec4 offset = projection * view * model * vec4(cos(ang) * width, -sin(ang) * l, -h, 0.0);
                     gl_Position = aux + offset;
                     EmitVertex();
@@ -89,32 +83,26 @@ const GLchar* geometryShaderSrc = GLSL(
                 }
                 EndPrimitive();
 
-                // Safe, GLfloats can represent small integers exactly
                 for (int i = 0; i <= sides; i++) {
-                    // Angle between each side in radians
                     float ang = ((PI * 2.0) / sides * i) + (PI / 4);
                     if(i%2==(sides%2))
                         gl_Position = aux + projection * view * model * vec4(0.0f,0.0f,-h,0.0f);
                         EmitVertex();
 
                     gColor = vec4(ang/7,ang/7,ang/7,1.0);
-                    // Offset from center of point (0.3 to accomodate for aspect ratio)
                     vec4 offset = projection * view * model * vec4(cos(ang) * width, -sin(ang) * l, -h, 0.0);
                     gl_Position = aux + offset;
                     EmitVertex();
 
                 }
                 EndPrimitive();
-                // Safe, GLfloats can represent small integers exactly
                 for (int i = 0; i <= sides; i++) {
-                    // Angle between each side in radians
                     float ang = ((PI * 2.0) / sides * i) + (PI / 4);
                     if(i%2==(sides%2))
                         gl_Position = aux + projection * view * model * vec4(0.0f,0.0f,h,0.0f);
                         EmitVertex();
 
                     gColor = vec4(ang/12,ang/12,ang/12,1.0);
-                    // Offset from center of point (0.3 to accomodate for aspect ratio)
                     vec4 offset = projection * view * model * vec4(cos(ang) * width, -sin(ang) * l, h, 0.0);
                     gl_Position = aux + offset;
                     EmitVertex();
@@ -124,24 +112,21 @@ const GLchar* geometryShaderSrc = GLSL(
     }
 
     void makeSphere(float size, int sides){
-        // Safe, GLfloats can represent small integers exactly
         for (int i = 0; i <= sides; i++) {
             float ang = (PI * 2.0) / sides * i;
             float ang1 = (PI * 2.0) / sides * (i+1);
-            // Angle between each side in radians
             for (int j = 0; j <= sides; j++)
             {
-            float ang2 = (PI * 2.0) / sides * j;
-            float ang3 = (PI * 2.0) / sides * (j+1);
-            gColor = vec4(0.1,ang/10,0.1,1.0);
-            
-            // Offset from center of point (0.3 to accomodate for aspect ratio)
-            vec4 offset = projection * view * model * vec4(sin(ang)*cos(ang2) * 0.1, sin(ang)*sin(ang2) * 0.1, cos(ang) * 0.1, 0.0);
-            gl_Position = aux + offset;
-            EmitVertex();
-            offset = projection * view * model * vec4(sin(ang1)*cos(ang2) * 0.1, sin(ang1)*sin(ang2) * 0.1, cos(ang1) * 0.1, 0.0);
-            gl_Position = aux + offset;
-            EmitVertex();
+                float ang2 = (PI * 2.0) / sides * j;
+                float ang3 = (PI * 2.0) / sides * (j+1);
+                gColor = vec4(0.1,ang/10,0.1,1.0);
+                
+                vec4 offset = projection * view * model * vec4(sin(ang)*cos(ang2) * size, sin(ang)*sin(ang2) * size, cos(ang) * size, 0.0);
+                gl_Position = aux + offset;
+                EmitVertex();
+                offset = projection * view * model * vec4(sin(ang1)*cos(ang2) * size, sin(ang1)*sin(ang2) * size, cos(ang1) * size, 0.0);
+                gl_Position = aux + offset;
+                EmitVertex();
 
             }
             EndPrimitive();
@@ -359,6 +344,37 @@ const GLchar* geometryShaderSrc2 = GLSL(
     }
 );
 
+// Geometry shader
+const GLchar* geometryShaderSrc3 = GLSL(
+    layout(triangles) in;
+    layout(triangle_strip, max_vertices = 420) out;
+  
+  
+    uniform mat4 view;
+    uniform mat4 projection;
+    uniform mat4 model;
+    uniform vec3 cameraPos;
+    
+    in vec3 vSize[];
+    in int vType[];
+    in float vTime[];
+    in int vSides[];
+    //in vec4 color[];
+
+    void main() {
+
+        for (int n = 0; n < gl_in.length(); n+=2)
+        {
+            gl_Position =  projection * view * model * gl_in[n].gl_Position;
+            EmitVertex();
+        }
+        EndPrimitive();
+
+    }
+);
+
+
+
 // Fragment shader
 const GLchar* fragmentShaderSrc = GLSL(
 	in vec2 vPos;
@@ -504,7 +520,7 @@ float* buildPoint(int n,float pos_x,float pos_y,float pos_z,float type, float n_
 }
 
 
-extern "C" int start(int n){
+extern "C" int init(int n){
     vecSize = n;
     points = (float *)calloc(sizeof(float),VALUES_PER_POINT*n);
     return 0;
@@ -525,6 +541,11 @@ extern "C" int cylinder(float pos_x,float pos_y,float pos_z,float r,float h){
     return 0;
 }
 
+extern "C" int sphere(float pos_x,float pos_y,float pos_z,float r){
+    buildPoint(N_POINTS++,pos_x, pos_y,pos_z,2, 10,r, r,r);
+    return 0;
+}
+
 float gaussiana2d(float x, float y,float sigma){
   return exp( -(pow( x/ sigma,2) + pow(y/sigma,2)) );
 }
@@ -539,7 +560,8 @@ extern "C" void city(int size){
         {   
             NUMBER_OF_BUILDINGS++;
 
-            for (int k = 0,ch=0; k < rand()%4; ++k, ch+=h)
+            int end = rand()%4;
+            for (int k = 0,ch=0; k < end; ++k, ch+=h)
             {
                 
                 h = 3*(0.4+fmax(gaussiana2d(i,j,25.2),gaussiana2d(i-30,j-30,10.2)));
@@ -549,10 +571,14 @@ extern "C" void city(int size){
                 //h = fmax(h,4*(0.3+gaussiana2d(i-12,j+40,10.2)));
                 if(h < 0.05)
                     break;
+                /*if(k == 3 && ((float) rand() / (RAND_MAX))>0.5)
+                    sphere(i,j,ch+h,0.5);
+                else*/
                 if(k > 1 && ((float) rand() / (RAND_MAX))>0.2)
                     cylinder(i,j,ch+h,0.4-(0.08*k),h);
                 else
                     box(i, j, ch+h, 0.4-(0.08*k), 0.4-(0.1*k), h);
+
             }
         }
 
@@ -640,8 +666,28 @@ void showFPS()
          lastTime += 1.0;
      }
 }
+    GLuint vbo;
+float step = 0.99;
+void change(){
+    double currentTime = glfwGetTime();
+    if ( currentTime - lastTime >= 7.0 ){ // If last cout was more than 1 sec ago
+        if(step<1.0)
+            step += 0.02;
+        else
+            step -= 0.02;
+        lastTime += 7.0;
+    }
+    for (int i = 0; i < N_POINTS; ++i)
+    {
+            points[i*VALUES_PER_POINT+2] = step * points[i*VALUES_PER_POINT+2];
+            points[i*VALUES_PER_POINT+VALUES_PER_POINT-1] = step * points[i*VALUES_PER_POINT+VALUES_PER_POINT-1];
+    }
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*VALUES_PER_POINT*N_POINTS, points, GL_STATIC_DRAW);
 
-extern "C" int init() {
+}
+
+extern "C" int start() {
     // Window
     /*sf::ContextSettings settings;
     settings.depthBits = 24;
@@ -721,6 +767,7 @@ extern "C" int init() {
     GLuint vertexShader = createShader(GL_VERTEX_SHADER, vertexShaderSrc);
 
     GLuint geometryShader = createShader(GL_GEOMETRY_SHADER, geometryShaderSrc);
+    GLuint geometryShader3 = createShader(GL_GEOMETRY_SHADER, geometryShaderSrc3);
 
     GLuint fragmentShader = createShader(GL_FRAGMENT_SHADER, fragmentShaderSrc);
     
@@ -731,6 +778,7 @@ extern "C" int init() {
     
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, geometryShader);
+    //glAttachShader(shaderProgram, geometryShader3);
     glAttachShader(shaderProgram, fragmentShader);
     //glAttachShader(shaderProgram, tessEvalShader);
     //glAttachShader(shaderProgram, tessCtrlShader);
@@ -752,60 +800,70 @@ extern "C" int init() {
 
 
     // Create VBO with point coordinates
-    GLuint vbo;
+
     glGenBuffers(1, &vbo);
 
     GLfloat a=0.45f, m_a=-0.45f;
 
-
-    // pos-x, pos-y, type, n_sides, size-x, size-y
-    /*GLfloat points[] = {
-    	m_a,  a, 3.0f, 5.0f, 0.2f,0.1f,
-        a,  a, 2.0f, 7.0f, 0.1f,0.1f,
-        a, m_a, 3.0f, 20.0f, 0.1f,0.3f,
-		m_a, m_a, 3.0f, 4.0f, 0.1f,0.3f,
-        0.0f, 0.0f, 1.0f, 3.0f, 0.1f,0.1f
-    };
-
-    GLfloat* points = buildPoints(N_POINTS);*/
+    int sizeofFloat = sizeof(GLfloat);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*VALUES_PER_POINT*N_POINTS, points, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeofFloat*VALUES_PER_POINT*N_POINTS, points, GL_STATIC_DRAW);
 
     // Create VAO
     GLuint vao;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
-        testError("GOGO 111");
+    
+    testError("GOGO 111");
 
     // Specify layout of point data
     GLint posAttrib = glGetAttribLocation(shaderProgram, "pos");
 
-        testError("GOGO 222");
+    testError("GOGO 222");
+    
     glEnableVertexAttribArray(posAttrib);
-        testError("GOGO 333");
+    
+    testError("GOGO 333");
 
-    glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, VALUES_PER_POINT * sizeof(GLfloat), 0);
+    glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, VALUES_PER_POINT * sizeofFloat, 0);
 
     // Specify layout of point data
     posAttrib = glGetAttribLocation(shaderProgram, "type");
     glEnableVertexAttribArray(posAttrib);
-    glVertexAttribPointer(posAttrib, 1, GL_FLOAT, GL_FALSE, VALUES_PER_POINT * sizeof(GLfloat), (void*) (3 * sizeof(GLfloat)));
+    glVertexAttribPointer(posAttrib, 1, GL_FLOAT, GL_FALSE, VALUES_PER_POINT * sizeofFloat, (void*) (3 * sizeofFloat));
 
     // Specify layout of point data
     posAttrib = glGetAttribLocation(shaderProgram, "sides");
     glEnableVertexAttribArray(posAttrib);
-    glVertexAttribPointer(posAttrib, 1, GL_FLOAT, GL_FALSE, VALUES_PER_POINT * sizeof(GLfloat), (void*) (4 * sizeof(GLfloat)));
+    glVertexAttribPointer(posAttrib, 1, GL_FLOAT, GL_FALSE, VALUES_PER_POINT * sizeofFloat, (void*) (4 * sizeofFloat));
 
     // Specify layout of point data
     posAttrib = glGetAttribLocation(shaderProgram, "size");
     glEnableVertexAttribArray(posAttrib);
-    glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, VALUES_PER_POINT * sizeof(GLfloat), (void*) (5 * sizeof(GLfloat)));
+    glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, VALUES_PER_POINT * sizeofFloat, (void*) (5 * sizeofFloat));
 
     GLenum shader1 = GL_TRUE;
 
     GLint   timeLoc = glGetUniformLocation(shaderProgram, "time"); /* Uniform index for variable "time" in shader */
     GLfloat timeValue; /* Application time */
+
+    /*glm::mat4 transformatrix = glm::rotate(glm::mat4(1.0f), 10.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+    posAttrib = glGetAttribLocation(shaderProgram, "transformatrix");
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeofFloat*VALUES_PER_POINT*N_POINTS, glm::value_ptr(transformatrix), GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(posAttrib);
+    glEnableVertexAttribArray(posAttrib+1);
+    glEnableVertexAttribArray(posAttrib+2);
+    glEnableVertexAttribArray(posAttrib+3);
+    
+    glVertexAttribPointer(posAttrib  , 4, GL_FLOAT, GL_FALSE, 0, (void*) (0 * sizeofFloat)) ;
+    glVertexAttribPointer(posAttrib+1, 4, GL_FLOAT, GL_FALSE, 0, (void*) (4 * sizeofFloat)) ;
+    glVertexAttribPointer(posAttrib+2, 4, GL_FLOAT, GL_FALSE, 0, (void*) (8 * sizeofFloat)) ;
+    glVertexAttribPointer(posAttrib+3, 4, GL_FLOAT, GL_FALSE, 0, (void*) (12 * sizeofFloat));
+    */
 
 
     // Create transformations
@@ -865,6 +923,7 @@ extern "C" int init() {
 
         //glPatchParameteri(GL_PATCH_VERTICES, 4);       // tell OpenGL that every patch has 16 verts
         //glDrawArrays(GL_PATCHES, 0, 5); 
+        change();
         glDrawArrays(GL_POINTS, 0, N_POINTS);
 
         glfwSwapBuffers(window);
@@ -889,9 +948,9 @@ int main(){
     scanf("%d",&CITY_SIZE);
 
     //createPoints(5000);
-    start(CITY_SIZE*2*CITY_SIZE*2);
+    init(CITY_SIZE*2*CITY_SIZE*2);
     city(CITY_SIZE);
     printf("NUMBER_OF_BUILDINGS=%d NUMBER_OF_BLOCKS=%d\n", NUMBER_OF_BUILDINGS, N_POINTS);
 
-    init();
+    start();
 }
