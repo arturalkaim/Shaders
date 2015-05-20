@@ -59,7 +59,7 @@ const GLchar* geometryShaderSrc = GLSL(
     in int vSides[];
     //in vec4 color[];
 
-    out vec4 gColor;
+    //out vec4 gColor;
     vec4 aux = projection * view * model * gl_in[0].gl_Position;
     const float PI = 3.1415926;
 
@@ -69,7 +69,7 @@ const GLchar* geometryShaderSrc = GLSL(
                     float ang = ((PI * 2.0) / sides * i) + (PI / 4);
 
                     
-                    gColor = vec4(ang/15,ang/15,ang/15,1.0);
+                    //gColor = vec4(ang/15,ang/15,ang/15,1.0);
                     
                     vec4 offset = projection * view * model * vec4(cos(ang) * width, -sin(ang) * l, -h, 0.0);
                     gl_Position = aux + offset;
@@ -89,7 +89,7 @@ const GLchar* geometryShaderSrc = GLSL(
                         gl_Position = aux + projection * view * model * vec4(0.0f,0.0f,-h,0.0f);
                         EmitVertex();
 
-                    gColor = vec4(ang/7,ang/7,ang/7,1.0);
+                    //gColor = vec4(ang/7,ang/7,ang/7,1.0);
                     vec4 offset = projection * view * model * vec4(cos(ang) * width, -sin(ang) * l, -h, 0.0);
                     gl_Position = aux + offset;
                     EmitVertex();
@@ -102,7 +102,7 @@ const GLchar* geometryShaderSrc = GLSL(
                         gl_Position = aux + projection * view * model * vec4(0.0f,0.0f,h,0.0f);
                         EmitVertex();
 
-                    gColor = vec4(ang/12,ang/12,ang/12,1.0);
+                    //gColor = vec4(ang/12,ang/12,ang/12,1.0);
                     vec4 offset = projection * view * model * vec4(cos(ang) * width, -sin(ang) * l, h, 0.0);
                     gl_Position = aux + offset;
                     EmitVertex();
@@ -119,7 +119,7 @@ const GLchar* geometryShaderSrc = GLSL(
             {
                 float ang2 = (PI * 2.0) / sides * j;
                 float ang3 = (PI * 2.0) / sides * (j+1);
-                gColor = vec4(0.1,ang/10,0.1,1.0);
+                //gColor = vec4(0.1,ang/10,0.1,1.0);
                 
                 vec4 offset = projection * view * model * vec4(sin(ang)*cos(ang2) * size, sin(ang)*sin(ang2) * size, cos(ang) * size, 0.0);
                 gl_Position = aux + offset;
@@ -145,7 +145,7 @@ const GLchar* geometryShaderSrc = GLSL(
     }
 
     bool notVisible(){
-        return false; //aux.x < -200.0 || aux.x > 200.0 || aux.y < -10.0 || aux.y > 1000.0;// || aux.z < -1.0 || aux.z > 10.0;
+        return aux.x < -200.0 || aux.x > 200.0 || aux.y < -10.0 || aux.y > 1000.0;// || aux.z < -1.0 || aux.z > 10.0;
     }
 
     void main() {
@@ -154,7 +154,7 @@ const GLchar* geometryShaderSrc = GLSL(
 //            EndPrimitive();
         }
         else{
-            gColor = vec4(0.1,0.67,0.3,1.0);
+            //gColor = vec4(0.1,0.67,0.3,1.0);
             switch (vType[0]){
 
                 case 1:
@@ -257,7 +257,7 @@ const GLchar* geometryShaderSrc2 = GLSL(
                         gl_Position = aux + projection * view * model * vec4(0.0f,0.0f,h,0.0f);
                         EmitVertex();
 
-                    gColor = vec4(ang/12,ang/12,ang/12,1.0);
+                    //gColor = vec4(ang/12,ang/12,ang/12,1.0);
                     // Offset from center of point (0.3 to accomodate for aspect ratio)
                     vec4 offset = projection * view * model * vec4(cos(ang) * width, -sin(ang) * l, h, 0.0);
                     gl_Position = aux + offset;
@@ -277,7 +277,7 @@ const GLchar* geometryShaderSrc2 = GLSL(
             {
             float ang2 = (PI * 2.0) / sides * j;
             float ang3 = (PI * 2.0) / sides * (j+1);
-            gColor = vec4(0.1,ang/10,0.1,1.0);
+            //gColor = vec4(0.1,ang/10,0.1,1.0);
             
             // Offset from center of point (0.3 to accomodate for aspect ratio)
             vec4 offset = projection * view * model * vec4(sin(ang)*cos(ang2) * 0.1, sin(ang)*sin(ang2) * 0.1, cos(ang) * 0.1, 0.0);
@@ -313,7 +313,7 @@ const GLchar* geometryShaderSrc2 = GLSL(
 //            EndPrimitive();
         }
         else{
-            gColor = vec4(0.1,0.67,0.3,1.0);
+            //gColor = vec4(0.1,0.67,0.3,1.0);
             switch (vType[0]){
 
                 case 1:
@@ -378,7 +378,7 @@ const GLchar* geometryShaderSrc3 = GLSL(
 // Fragment shader
 const GLchar* fragmentShaderSrc = GLSL(
 	in vec2 vPos;
-    in vec4 gColor;
+    //in vec4 gColor;
 
     out vec4 outColor;
 
@@ -388,7 +388,8 @@ const GLchar* fragmentShaderSrc = GLSL(
 
     //vec4(gColor[0]); //
     void main() {
-        outColor = gColor;//vec4(rand(vPos), rand(vPos), rand(vPos), 1.0);
+        outColor = vec4 (0.5, 0.5, 0.5, 1.0);
+        //outColor = gColor;//vec4(rand(vPos), rand(vPos), rand(vPos), 1.0);
     }
 );
 
