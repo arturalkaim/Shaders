@@ -8,6 +8,7 @@
 #include <glm/gtc/random.hpp>
 #include <glm/gtc/noise.hpp>
 #include <unistd.h>
+#define PI          3.14159265358979
 
 /* shader functions defined in shader.c */
 extern void shaderAttachFromFile(GLuint, GLenum, const char *);
@@ -21,24 +22,25 @@ const GLchar* vertexShaderSrc = GLSL(
     in float type;
     in float sides;
     in vec3 size;
-
-    uniform float time;
+    in vec3 rotation;
+    in float angle;
 
     uniform mat4 view;
     uniform mat4 projection;
     uniform mat4 model;
 
     out int vType;
-    out float vTime;
     out int vSides;
     out vec3 vSize;
-
+    out vec3 vRotation;
+    out float vAngle;
     void main() {
         gl_Position = vec4(pos.x, pos.y, pos.z, 1.0); //projection * view * model * 
         vType = int(type);
         vSides = int(sides);
-        vTime = time;
         vSize = size;
+        vRotation= rotation;
+        vAngle= angle;
     }
 );
 
@@ -52,17 +54,44 @@ const GLchar* geometryShaderSrc = GLSL(
     uniform mat4 model;
     uniform vec3 cameraPos;
     
+    in vec3 vRotation[];
+    in float vAngle[];
     in vec3 vSize[];
     in int vType[];
-    in float vTime[];
     in int vSides[];
     //in vec4 color[];
 
     out vec4 gColor;
-    vec4 aux = projection * view * model * gl_in[0].gl_Position;
     const float PI = 3.1415926;
 
-   
+    mat4 calcRotation(){
+        mat4 aux_mat;
+        aux_mat[0][0] = cos(vAngle[0]) + vRotation[0].x*vRotation[0].x*(1-cos(vAngle[0]));
+        aux_mat[0][1] = sin(vAngle[0])*vRotation[0].z + vRotation[0].x*vRotation[0].y*(1-cos(vAngle[0]));
+        aux_mat[0][2] = sin(vAngle[0])*vRotation[0].y + vRotation[0].x*vRotation[0].z*(1-cos(vAngle[0]));
+
+        aux_mat[1][0] = sin(vAngle[0])*vRotation[0].z + vRotation[0].x*vRotation[0].y*(1-cos(vAngle[0]));
+        aux_mat[1][1] = cos(vAngle[0]) + vRotation[0].y*vRotation[0].y*(1-cos(vAngle[0]));
+        aux_mat[1][2] = sin(vAngle[0])*vRotation[0].x - vRotation[0].y*vRotation[0].z*(1-cos(vAngle[0]));
+
+        aux_mat[2][0] = sin(vAngle[0])*vRotation[0].y - vRotation[0].x*vRotation[0].z*(1-cos(vAngle[0]));
+        aux_mat[2][1] = sin(vAngle[0])*vRotation[0].x + vRotation[0].y*vRotation[0].z*(1-cos(vAngle[0]));
+        aux_mat[2][2] = cos(vAngle[0]) + vRotation[0].z*vRotation[0].z*(1-cos(vAngle[0]));
+
+        aux_mat[0][3] = 0.0;
+        aux_mat[1][3] = 0.0;
+        aux_mat[2][3] = 0.0;
+        aux_mat[3][3] = 1.0;
+        aux_mat[3][2] = 0.0;
+        aux_mat[3][1] = 0.0;
+        aux_mat[3][0] = 0.0;
+
+        return aux_mat;//mat4(vRotation[0].x);
+    }
+
+    mat4 rot = calcRotation();
+    vec4 aux = projection * view * model * gl_in[0].gl_Position;
+
     void makeCyl(float width, float l,float h, int sides){
                 // Safe, GLfloats can represent small integers exactly
                 for (int i = 0; i <= sides; i++) {
@@ -77,12 +106,14 @@ const GLchar* geometryShaderSrc = GLSL(
                     gColor = vec4(ang/15,ang/15,ang/15,1.0);
                     
                     // Offset from center of point (0.3 to accomodate for aspect ratio)
-                    vec4 offset = projection * view * model * vec4(cos(ang) * width, -sin(ang) * l, -h, 0.0);
+                    vec4 offset = projection * view * model * rot * vec4(cos(ang) * width, -sin(ang) * l, -h, 0.0);
                     gl_Position = aux + offset;
+                    //gl_Position *= rot; 
                     EmitVertex();
 
-                    offset = projection * view * model * vec4(cos(ang) * width, -sin(ang) * l, h, 0.0);
+                    offset = projection * view * model * rot * vec4(cos(ang) * width, -sin(ang) * l, h, 0.0);
                     gl_Position = aux + offset;
+                    //gl_Position *= rot;                     
                     EmitVertex();
 
                     
@@ -93,14 +124,17 @@ const GLchar* geometryShaderSrc = GLSL(
                 for (int i = 0; i <= sides; i++) {
                     // Angle between each side in radians
                     float ang = ((PI * 2.0) / sides * i) + (PI / 4);
-                    if(i%2==(sides%2))
-                        gl_Position = aux + projection * view * model * vec4(0.0f,0.0f,-h,0.0f);
+                    if(i%2==(sides%2)){
+                        gl_Position = aux + projection * view * model * rot * vec4(0.0f,0.0f,-h,0.0f);
+                        //gl_Position *= rot; 
                         EmitVertex();
+                    }
 
                     gColor = vec4(ang/7,ang/7,ang/7,1.0);
                     // Offset from center of point (0.3 to accomodate for aspect ratio)
-                    vec4 offset = projection * view * model * vec4(cos(ang) * width, -sin(ang) * l, -h, 0.0);
+                    vec4 offset = projection * view * model * rot * vec4(cos(ang) * width, -sin(ang) * l, -h, 0.0);
                     gl_Position = aux + offset;
+                    //gl_Position *= rot;                    
                     EmitVertex();
 
                 }
@@ -109,19 +143,66 @@ const GLchar* geometryShaderSrc = GLSL(
                 for (int i = 0; i <= sides; i++) {
                     // Angle between each side in radians
                     float ang = ((PI * 2.0) / sides * i) + (PI / 4);
-                    if(i%2==(sides%2))
-                        gl_Position = aux + projection * view * model * vec4(0.0f,0.0f,h,0.0f);
+                    if(i%2==(sides%2)){
+                        gl_Position = aux + projection * view * model * rot * vec4(0.0f,0.0f,h,0.0f);
+                        //gl_Position *= rot; 
                         EmitVertex();
-
+                    }
                     gColor = vec4(ang/12,ang/12,ang/12,1.0);
                     // Offset from center of point (0.3 to accomodate for aspect ratio)
-                    vec4 offset = projection * view * model * vec4(cos(ang) * width, -sin(ang) * l, h, 0.0);
+                    vec4 offset = projection * view * model * rot * vec4(cos(ang) * width, -sin(ang) * l, h, 0.0);
                     gl_Position = aux + offset;
+                    //gl_Position *= rot; 
                     EmitVertex();
 
                 }
                 EndPrimitive();
     }
+
+    void makePir(float width, float l,float h, int sides){
+                    // Safe, GLfloats can represent small integers exactly
+                    for (int i = 0; i <= sides; i++) {
+                        // Angle between each side in radians
+                        float ang = ((PI * 2.0) / sides * i) + (PI / 4);
+                        //float ang = (PI * 2.0) / vSides[0] * i;
+                        //ang -= vTime[0];
+                        //if(i%2==0)
+                        //    gl_Position = aux * projection * view * model;
+                        //    EmitVertex();
+                        
+                        gColor = vec4(ang/15,ang/15,ang/15,1.0);
+                        
+                        // Offset from center of point (0.3 to accomodate for aspect ratio)
+                        vec4 offset = projection * view * model * rot * vec4(cos(ang) * width, -sin(ang) * l, -h, 0.0);
+                        gl_Position = aux + offset;
+                        EmitVertex();
+
+                        offset = projection * view * model * rot * vec4(0.0, 0.0, h, 0.0);
+                        gl_Position = aux + offset;
+                        EmitVertex();
+
+                        
+                    }
+                    EndPrimitive();
+
+                    // Safe, GLfloats can represent small integers exactly
+                    for (int i = 0; i <= sides; i++) {
+                        // Angle between each side in radians
+                        float ang = ((PI * 2.0) / sides * i) + (PI / 4);
+                        if(i%2==(sides%2))
+                            gl_Position = aux + projection * view * model * rot * vec4(0.0f,0.0f,-h,0.0f);
+                            EmitVertex();
+
+                        gColor = vec4(ang/7,ang/7,ang/7,1.0);
+                        // Offset from center of point (0.3 to accomodate for aspect ratio)
+                        vec4 offset = projection * view * model * rot * vec4(cos(ang) * width, -sin(ang) * l, -h, 0.0);
+                        gl_Position = aux + offset;
+                        EmitVertex();
+
+                    }
+                    EndPrimitive();
+                    // Safe, GLfloats can represent small integers exactly
+        }
 
     void makeSphere(float size, int sides){
         // Safe, GLfloats can represent small integers exactly
@@ -151,19 +232,20 @@ const GLchar* geometryShaderSrc = GLSL(
     }
 
     int calcSides(int sides){
-        float dist = distance(aux,vec4(cameraPos,1.0));
-        if(dist > 1){
-             return  int(min(32,max(4.0,sides/(dist*0.1))));
+        float dist = distance(aux+vSize[0].z,vec4(cameraPos,1.0))-vSize[0].y;
+        if(dist > 5){
+             return  int(min(sides,max(4.0,sides/(dist*0.07))));
         }
         return sides;
 
     }
 
     bool notVisible(){
-        return false; //aux.x < -200.0 || aux.x > 200.0 || aux.y < -10.0 || aux.y > 1000.0;// || aux.z < -1.0 || aux.z > 10.0;
+        return false;//-(gl_in[0].gl_Position.y - cameraPos.y)*1.6<abs(gl_in[0].gl_Position.x - cameraPos.x);//
     }
 
     void main() {
+        calcRotation();
 
         if(notVisible()){
 //            EndPrimitive();
@@ -182,6 +264,9 @@ const GLchar* geometryShaderSrc = GLSL(
 
                 case 3:
                     makeCyl(vSize[0].x,vSize[0].y,vSize[0].z,calcSides(int(vSides[0])));
+                break;
+                case 4:
+                    makePir(vSize[0].x,vSize[0].y,vSize[0].z,int(vSides[0]));
                 break;
 
                 default:
@@ -223,10 +308,11 @@ const GLchar* geometryShaderSrc2 = GLSL(
 
    
     void makeCyl(float width, float l,float h, int sides){
+        float initAngle = (PI / 4);
                 // Safe, GLfloats can represent small integers exactly
                 for (int i = 0; i <= sides; i++) {
                     // Angle between each side in radians
-                    float ang = ((PI * 2.0) / sides * i) + (PI / 4);
+                    float ang = ((PI * 2.0) / sides * i) + initAngle;
                     //float ang = (PI * 2.0) / vSides[0] * i;
                     //ang -= vTime[0];
                     //if(i%2==0)
@@ -251,7 +337,7 @@ const GLchar* geometryShaderSrc2 = GLSL(
                 // Safe, GLfloats can represent small integers exactly
                 for (int i = 0; i <= sides; i++) {
                     // Angle between each side in radians
-                    float ang = ((PI * 2.0) / sides * i) + (PI / 4);
+                    float ang = ((PI * 2.0) / sides * i) + initAngle;
                     if(i%2==(sides%2))
                         gl_Position = aux + projection * view * model * vec4(0.0f,0.0f,-h,0.0f);
                         EmitVertex();
@@ -267,7 +353,7 @@ const GLchar* geometryShaderSrc2 = GLSL(
                 // Safe, GLfloats can represent small integers exactly
                 for (int i = 0; i <= sides; i++) {
                     // Angle between each side in radians
-                    float ang = ((PI * 2.0) / sides * i) + (PI / 4);
+                    float ang = ((PI * 2.0) / sides * i) + initAngle;
                     if(i%2==(sides%2))
                         gl_Position = aux + projection * view * model * vec4(0.0f,0.0f,h,0.0f);
                         EmitVertex();
@@ -455,7 +541,7 @@ GLuint createShader(GLenum type, const GLchar* src) {
     return shader;
 }
 
-#define VALUES_PER_POINT 8
+#define VALUES_PER_POINT 12
 int N_POINTS = 0;
 int vecSize = 0;
 GLfloat* points;
@@ -470,18 +556,27 @@ float* buildPoints(int n){
             ret[i*VALUES_PER_POINT+(j++)] = ((float) rand() / (RAND_MAX/10)) - 2.5f;
             ret[i*VALUES_PER_POINT+(j++)] = ((float) rand() / (RAND_MAX/10)) - 2.5f;
             ret[i*VALUES_PER_POINT+(j++)] = ((float) rand() / (RAND_MAX))/10;
-            ret[i*VALUES_PER_POINT+(j++)] = (i % 3)+ 1;
+            ret[i*VALUES_PER_POINT+(j++)] = (i % 5)+ 1;
             ret[i*VALUES_PER_POINT+(j++)] = ((float) (rand() % 40 ));
             ret[i*VALUES_PER_POINT+(j++)] = ((float) rand() / (RAND_MAX))/10+0.02f;
             ret[i*VALUES_PER_POINT+(j++)] = ((float) rand() / (RAND_MAX))/10+0.02f;
             ret[i*VALUES_PER_POINT+(j++)] = ((float) rand() / (RAND_MAX))/10+0.06f;
+            ret[i*VALUES_PER_POINT+(j++)] = 0.0;
+            ret[i*VALUES_PER_POINT+(j++)] = 0.0;            
+            ret[i*VALUES_PER_POINT+(j++)] = 0.0;
+            ret[i*VALUES_PER_POINT+(j++)] = 0.0;
     }
 
 
     return ret;
 }
 
-float* buildPoint(int n,float pos_x,float pos_y,float pos_z,float type, float n_sides,float size_x,float size_y,float size_z){
+int buildPoint(int n,
+    float pos_x,float pos_y,float pos_z,
+    float type, float n_sides,
+    float size_x,float size_y,float size_z,
+    float angle = 0.0f,
+    float vx = 0.0f,float vy= 1.0f,float vz = 0.0f){
 
 
     if(N_POINTS>=vecSize){
@@ -489,6 +584,10 @@ float* buildPoint(int n,float pos_x,float pos_y,float pos_z,float type, float n_
         vecSize = 2*vecSize;
         printf("TEST %d  :  %d\n",vecSize,N_POINTS);
     }
+
+
+    float v_length = sqrt((vx * vx) + (vy * vy) + (vz * vz));
+
 
     // pos-x, pos-y, type, n_sides, size-x, size-y
     points[n*VALUES_PER_POINT+0] = pos_x;
@@ -499,12 +598,16 @@ float* buildPoint(int n,float pos_x,float pos_y,float pos_z,float type, float n_
     points[n*VALUES_PER_POINT+5] = size_x;
     points[n*VALUES_PER_POINT+6] = size_y;
     points[n*VALUES_PER_POINT+7] = size_z;
-
-    return points;
+    points[n*VALUES_PER_POINT+8] = angle;
+    points[n*VALUES_PER_POINT+9] = vx/v_length;
+    points[n*VALUES_PER_POINT+10] = vy/v_length;
+    points[n*VALUES_PER_POINT+11] = vz/v_length;
+    
+    return n;
 }
 
 
-extern "C" int start(int n){
+extern "C" int init(int n){
     vecSize = n;
     points = (float *)calloc(sizeof(float),VALUES_PER_POINT*n);
     return 0;
@@ -517,11 +620,27 @@ extern "C" int createPoints(int in){
 }
 
 extern "C" int box(float pos_x,float pos_y,float pos_z,float w,float l,float h){
-    buildPoint(N_POINTS++,pos_x, pos_y,pos_z,1, 4,w, l,h);
-    return 0;
+    return buildPoint(N_POINTS++,pos_x, pos_y,pos_z,1, 4,w, l,h);
 }
 extern "C" int cylinder(float pos_x,float pos_y,float pos_z,float r,float h){
-    buildPoint(N_POINTS++,pos_x, pos_y,pos_z,3, 32,r, r,h);
+    return buildPoint(N_POINTS++,pos_x, pos_y,pos_z,3, 36,r, r,h);
+}
+extern "C" int pyramid(float pos_x,float pos_y,float pos_z,float w,float l,float h){
+    return buildPoint(N_POINTS++,pos_x, pos_y,pos_z,4, 4,w, l,h);
+}
+
+extern "C" int rotate(int n,
+    float angle = 0.0f,
+    float vx = 0.0f,float vy= 1.0f,float vz = 0.0f){
+
+
+    float v_length = sqrt((vx * vx) + (vy * vy) + (vz * vz));
+
+    points[n*VALUES_PER_POINT+8] = angle;
+    points[n*VALUES_PER_POINT+9] = vx/v_length;
+    points[n*VALUES_PER_POINT+10] = vy/v_length;
+    points[n*VALUES_PER_POINT+11] = vz/v_length;
+    
     return 0;
 }
 
@@ -549,8 +668,12 @@ extern "C" void city(int size){
                 //h = fmax(h,4*(0.3+gaussiana2d(i-12,j+40,10.2)));
                 if(h < 0.05)
                     break;
-                if(k > 1 && ((float) rand() / (RAND_MAX))>0.2)
-                    cylinder(i,j,ch+h,0.4-(0.08*k),h);
+                if(k > 1 && ((float) rand() / (RAND_MAX))>0.9){
+                    if(((float) rand() / (RAND_MAX))>0.5)
+                        cylinder(i,j,ch+h,0.4-(0.08*k),h/2);
+                    else
+                        pyramid(i, j, ch+h+h/2, 0.4-(0.08*k), 0.4-(0.08*k), h/2);
+                }
                 else
                     box(i, j, ch+h, 0.4-(0.08*k), 0.4-(0.1*k), h);
             }
@@ -625,6 +748,22 @@ void do_movement(GLFWwindow* window)
     if (keys[GLFW_KEY_F])
         cameraPos -= cameraSpeed * cameraUp;
     cameraFront = -cameraPos + posLookAt;
+
+
+    if (keys[GLFW_KEY_P]){
+        glPointSize(8.0f);
+        glPolygonMode(GL_FRONT_AND_BACK,GL_POINT);
+        return;
+    }
+    if (keys[GLFW_KEY_L]){
+        glEnable(GL_LINE_SMOOTH);
+        glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+        return;
+    }
+    if (keys[GLFW_KEY_O]){
+        glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+        return;
+    }
 }
 
 int nbFrames = 0;
@@ -641,7 +780,7 @@ void showFPS()
      }
 }
 
-extern "C" int init() {
+extern "C" int start() {
     // Window
     /*sf::ContextSettings settings;
     settings.depthBits = 24;
@@ -755,20 +894,6 @@ extern "C" int init() {
     GLuint vbo;
     glGenBuffers(1, &vbo);
 
-    GLfloat a=0.45f, m_a=-0.45f;
-
-
-    // pos-x, pos-y, type, n_sides, size-x, size-y
-    /*GLfloat points[] = {
-    	m_a,  a, 3.0f, 5.0f, 0.2f,0.1f,
-        a,  a, 2.0f, 7.0f, 0.1f,0.1f,
-        a, m_a, 3.0f, 20.0f, 0.1f,0.3f,
-		m_a, m_a, 3.0f, 4.0f, 0.1f,0.3f,
-        0.0f, 0.0f, 1.0f, 3.0f, 0.1f,0.1f
-    };
-
-    GLfloat* points = buildPoints(N_POINTS);*/
-
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(float)*VALUES_PER_POINT*N_POINTS, points, GL_STATIC_DRAW);
 
@@ -801,6 +926,16 @@ extern "C" int init() {
     posAttrib = glGetAttribLocation(shaderProgram, "size");
     glEnableVertexAttribArray(posAttrib);
     glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, VALUES_PER_POINT * sizeof(GLfloat), (void*) (5 * sizeof(GLfloat)));
+    
+    // Specify layout of point data
+    posAttrib = glGetAttribLocation(shaderProgram, "angle");
+    glEnableVertexAttribArray(posAttrib);
+    glVertexAttribPointer(posAttrib, 1, GL_FLOAT, GL_FALSE, VALUES_PER_POINT * sizeof(GLfloat), (void*) (8 * sizeof(GLfloat)));
+
+    // Specify layout of point data
+    posAttrib = glGetAttribLocation(shaderProgram, "rotation");
+    glEnableVertexAttribArray(posAttrib);
+    glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, VALUES_PER_POINT * sizeof(GLfloat), (void*) (9 * sizeof(GLfloat)));
 
     GLenum shader1 = GL_TRUE;
 
@@ -810,12 +945,12 @@ extern "C" int init() {
 
     // Create transformations
     glm::mat4 model = glm::mat4(1.0f);
-    glm::mat4 view;
-    glm::mat4 projection;
+    glm::mat4 view  = glm::mat4(1.0f);
+    glm::mat4 projection = glm::mat4(1.0f);
     //model = glm::rotate(model, 10.0f, glm::vec3(0.0f, 0.0f, 1.0f));
     //model = glm::rotate(model, 10.0f, glm::vec3(1.0f, 0.0f, 0.0f));
     //view = glm::translate(view, glm::vec3(0.0f, 1.0f, 0.0f));
-    projection = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.1f, 300.0f);
+    projection = glm::perspective(glm::radians(45.0f), (GLfloat)width / (GLfloat)height, 0.1f, 300.0f);
 
     // Get their uniform location
     GLint modelLoc = glGetUniformLocation(shaderProgram, "model");
@@ -838,7 +973,7 @@ extern "C" int init() {
         else
             glUseProgram(shaderProgram2);
         // Clear the colorbuffer
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         
@@ -855,14 +990,8 @@ extern "C" int init() {
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection)); 
-        glUniformMatrix4fv(camPos, 1, GL_FALSE, glm::value_ptr(cameraPos)); 
+        glUniform3fv(camPos, 1, glm::value_ptr(cameraPos)); 
         
-        a+=0.01;
-        timeValue = a;
-        
-        glUniform1f(timeLoc, timeValue);
-        
-
         //glPatchParameteri(GL_PATCH_VERTICES, 4);       // tell OpenGL that every patch has 16 verts
         //glDrawArrays(GL_PATCHES, 0, 5); 
         glDrawArrays(GL_POINTS, 0, N_POINTS);
@@ -873,13 +1002,14 @@ extern "C" int init() {
 
     }
 
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glfwTerminate();
 
+    memset(points,0,vecSize);
     free(points);
 
-    return 0;
+    return NUMBER_OF_BUILDINGS;
 }
 
 int CITY_SIZE = 10;
@@ -889,9 +1019,17 @@ int main(){
     scanf("%d",&CITY_SIZE);
 
     //createPoints(5000);
-    start(CITY_SIZE*2*CITY_SIZE*2);
-    city(CITY_SIZE);
+    init(CITY_SIZE*2*CITY_SIZE*2);
+    
+    //city(CITY_SIZE);
+
+    rotate(cylinder(0.0,   0.0,   0.0, 1.0, 1.2),PI/3);
+    /*cylinder(2.0,  -6.0,   -1.0, 1.0, 1.2);
+    cylinder(0.0,  -12.0,   -1.0, 1.0, 1.2);
+    cylinder(-2.0,  -18.0,   -1.0, 1.0, 1.2);
+    cylinder(-4.0,  -24.0,   -1.0, 1.0, 1.2);*/
+
     printf("NUMBER_OF_BUILDINGS=%d NUMBER_OF_BLOCKS=%d\n", NUMBER_OF_BUILDINGS, N_POINTS);
 
-    init();
+    start();
 }
